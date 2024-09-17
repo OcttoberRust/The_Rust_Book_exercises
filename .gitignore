@@ -1,0 +1,5 @@
+# Ignore target directories for all exercises
+**/target/
+
+# Ignore Cargo.lock in library projects
+**/Cargo.lock
