@@ -31,9 +31,12 @@ struct Employee {
 fn parse_name(input: &String) -> Employee {
     let mut parsed_string: Vec<&str> = input.split_whitespace().collect();
 
-    //Good practice would use option handling here
+    let mut _name = String::new();
+    let mut _department = String::new();
+
+    println!("{} {}", _name, _department);
     Employee {
-        name: parsed_string.get(1).expect("unknown").to_string(),
-        department: parsed_string.get(3).expect("unknown").to_string(),
+        name: String::from(&parsed_string.get(1).unwrap()),
+        department: String::from(parsed_string.get(2)),
     }
 }
