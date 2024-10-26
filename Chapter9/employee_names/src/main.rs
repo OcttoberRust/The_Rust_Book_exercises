@@ -4,48 +4,39 @@ use std::io;
 fn main() {
 
     let mut input = String::new();
-    let mut map: HashMap::<String, String> = HashMap::new();
+    let mut map: HashMap::<String, Vec<String>> = HashMap::new();
 
-    println!("
-              Enter 1 to view all employees and their departments.
-              Enter 2 to find an employee by department. 
-              Enter 3 to enter an employee into a department.
-              Enter 4 to exit the program");
+    loop {
+        println!("
+        Enter 1 to view all employees and their departments.
+        Enter 2 to find an employee by department. 
+        Enter 3 to enter an employee into a department.
+        Enter 4 to exit the program.\n");
 
-    match input.trim() {
-        "1" => {
-            input.clear();
-            println!("{:?}", map);
-        },
-        "2" => {
-            input.clear(); 
-            find_employee(&map);
-        },
-        "3" => println!("success 3"),
-        "4" => println!("success 4"),
-        (_) => println!("Please enter a valid input."),
+        io::stdin().read_line(&mut input).expect("failed to read line"); 
+        match input.trim() {
+            "1" => {
+                input.clear();
+                println!("{:?}", map);
+            },
+            "2" => {
+                input.clear(); 
+                find_employee(&map);
+            },
+            "3" => {
+                input.clear();
+                insert_employee(&mut map);
+            },
+            "4" => {
+                input.clear();
+                break;
+            },
+            (_) => {
+                input.clear();
+                println!("Please enter a valid input");
+            }
+        }
     }
-
-    input.clear();
-
-    println!("Please enter the department name and employee name in this format: 
-             \'Add *Name* to *Department*\'"); 
-    io::stdin().read_line(&mut input);
-    println!("{:?}", input);
-    let employee = parse_name(&input); 
-    println!("{:?}", employee.name);
-    map.insert(employee.department, employee.name);
-    println!("{:?}", map);
-
-    
-    
-    //ask the user if they would like to enter a employee/department or exit the program
-    //if condition for entering employee 
-    //send input string to function to parse input and return employee name and department name
-    //statement to insert department name (key)
-    //statement to add employee by department name (might be able to consolidate)
-    //else condition to exit program
-
 }
 
 struct Employee {
@@ -53,27 +44,15 @@ struct Employee {
     name: String
 }
 
+fn find_employee(map: &HashMap<String, Vec<String>>) {
 
-fn parse_name(input: &String) -> Employee {
-    let mut parsed_string: Vec<&str> = input.split_whitespace().collect();
-
-    //Good practice would use option handling here
-    Employee {
-        department: parsed_string.get(3).expect("unknown").to_string(),
-        name: parsed_string.get(1).expect("unknown").to_string(),
-    }
-}
-
-fn find_employee(map: &HashMap<String, String>) {
-
-    let mut input_employee_name = String::new(); 
+    let mut input_find_employee = String::new(); 
 
     println!("Please enter the employee's department, followed by their name. Format: Department EName");
 
-    io::stdin().read_line(&mut input_employee_name).expect("Failed to read line.");
+    io::stdin().read_line(&mut input_find_employee).expect("Failed to read line.");
 
-
-    let mut parsed_string: Vec<&str> = input_employee_name.split_whitespace().collect();
+    let mut parsed_string: Vec<&str> = input_find_employee.split_whitespace().collect();
 
     //Good practice would use option handling here
     let employee = Employee {
@@ -81,11 +60,45 @@ fn find_employee(map: &HashMap<String, String>) {
         name: parsed_string.get(1).expect("unknown").to_string(),
     };
 
-    match map.get(&employee.department) {
+    match map.get_key_value(&employee.department) {
         None => println!("No key found!"),
-        Some(v) => {
-            println!("Printing vec: {:?}", v);
+        Some((key, value)) => {
+            if let Some(found_employee_name) = value.iter().find(|&name| name == &employee.name) {
+                println!("{} is in {} department!", found_employee_name, key);
+            }
         },
     };
 
+}
+
+fn insert_employee(map: &mut HashMap<String, Vec<String>>) {
+
+    let mut input_insert_employee = String::new();
+
+    println!("Please enter the department name and employee name in this format: 
+             \'Add *Name* to *Department*\'"); 
+
+    io::stdin().read_line(&mut input_insert_employee);
+
+    let mut parsed_string: Vec<&str> = input_insert_employee.split_whitespace().collect();
+
+    //Good practice would use option handling here
+    let employee = Employee {
+        department: parsed_string.get(3).expect("unknown").to_string(),
+        name: parsed_string.get(1).expect("unknown").to_string(),
+    };
+
+    match map.get_mut(&employee.department) {
+        None => {
+            //insert
+            let mut name_vec: Vec<String> = Vec::<String>::new();
+            name_vec.push(employee.name);
+            map.insert(employee.department, name_vec);
+        }
+        Some(returned_vec) => {
+            returned_vec.push(employee.name);
+        }
+    };
+
+    println!("{:?}", map);
 }
